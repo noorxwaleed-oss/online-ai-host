@@ -1,8 +1,7 @@
 
 # 🎙️ Online AI-host
 
-[![WEBSITE](https://img.shields.io/badge/WEBSITE-gray?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
-<a href='https://www.webpagetest.org/blank.html'>
+[![WEBSITE](https://img.shields.io/badge/WEBSITE-gray?style=for-the-badge&logo=supabase&logoColor=white)](https://www.webpagetest.org/blank.html)
   <img src='https://img.shields.io/badge/RESEARCH-blue?style=for-the-badge'>
 </a>
 </a>
