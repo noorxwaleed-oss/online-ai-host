@@ -1,0 +1,29 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Environment variables
+.env
+.env.*
+
+# MLflow runs
+mlruns/
+
+# Evaluation results (large JSON/MD files — keep results/ dir but not outputs)
+evaluation/results/*.json
+evaluation/results/*.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
