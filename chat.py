@@ -1,0 +1,5 @@
+from prompts import textGeneration_prompt
+from llms import generateTextLlm
+from prompts import clipsGeneration_prompt
+textGeneration_chat_chain= textGeneration_prompt | generateTextLlm 
+clipsGeneration_chat_chain = clipsGeneration_prompt | generateTextLlm

@@ -1,15 +1,4 @@
 
-  # Complete UI Design System
-
-  This is a code bundle for Complete UI Design System. The original project is available at https://www.figma.com/design/jYNOn2vUFawK0kypR9n2Vs/Complete-UI-Design-System.
-
-  ## Running the code
-
-  Run `npm i` to install the dependencies.
-
-  Run `npm run dev` to start the development server.
-  
-
 # 🎙️ Online AI-host
 
 [![WEBSITE](https://img.shields.io/badge/WEBSITE-gray?style=for-the-badge&logo=supabase&logoColor=white)](https://www.webpagetest.org/blank.html)
