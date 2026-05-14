@@ -5,3 +5,4 @@ generateTextLlm = ChatOpenAI(model=textGeneration_model
                  , api_key=textGeneration_HF_token
                  ,base_url=textGeneration_base_url
                  ,temperature=0.2)
+
