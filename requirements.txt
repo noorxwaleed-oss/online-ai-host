@@ -1,0 +1,8 @@
+torch
+diffusers
+transformers
+accelerate
+deep-translator
+pillow
+safetensors
+huggingface_hub
