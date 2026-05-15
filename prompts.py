@@ -70,6 +70,6 @@ TRANSLATOR_PROMPT = """
     - Return ONLY valid JSON.
 
     JSON:
-    {json.dumps(analysis_json, ensure_ascii=False)}
+    {json_content}
     """
 
