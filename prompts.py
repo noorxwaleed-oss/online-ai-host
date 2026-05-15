@@ -124,3 +124,65 @@ Constraints:
     ]
     
 )
+
+
+
+# ===================================================
+
+
+"""
+Voice configurations and style settings for the Audio Production Agent.
+
+Contains voice registries for ElevenLabs (English) and Munsit (Arabic dialects),
+plus style parameters and dialect-to-voice mappings.
+"""
+
+# ========== ElevenLabs English Voices ==========
+
+ENGLISH_VOICES = {
+    "adam": {"id": "pNInz6obpgDQGcFmaJgB", "name": "Adam", "gender": "male", "style": "professional"},
+    "sarah": {"id": "EXAVITQu4vr4xnSDxMaL", "name": "Sarah", "gender": "female", "style": "professional"},
+    "george": {"id": "JBFqnCBsd6RMkjVDRZzb", "name": "George", "gender": "male", "style": "warm"},
+    "alice": {"id": "Xb7hH8MSUJpSbSDYk0k2", "name": "Alice", "gender": "female", "style": "calm"},
+    "charlie": {"id": "IKne3meq5aSn9XLyUdCD", "name": "Charlie", "gender": "male", "style": "energetic"},
+    "bella": {"id": "hpp4J3VqNfWAUOO0d1Us", "name": "Bella", "gender": "female", "style": "warm"},
+}
+
+# ========== Style Parameters ==========
+
+STYLES = {
+    "calm": {"stability": 0.8, "similarity_boost": 0.5},
+    "energetic": {"stability": 0.4, "similarity_boost": 0.8},
+    "professional": {"stability": 0.7, "similarity_boost": 0.6},
+    "warm": {"stability": 0.6, "similarity_boost": 0.7},
+    "authoritative": {"stability": 0.75, "similarity_boost": 0.55},
+    "clear": {"stability": 0.75, "similarity_boost": 0.7},
+    "natural": {"stability": 0.65, "similarity_boost": 0.65},
+}
+
+MODEL_ID = "eleven_turbo_v2"
+
+# ========== Munsit Arabic Dialect Voices ==========
+
+MUNSIT_VOICES = {
+    # Saudi (Najdi)
+    "fahad": {"id": "ar-najdi-male-2", "name": "Fahad", "gender": "male", "dialect": "saudi", "style": "professional"},
+    "maha": {"id": "ar-najdi-female-1", "name": "Maha", "gender": "female", "dialect": "saudi", "style": "calm"},
+    "ahmed": {"id": "ar-egyptian-male-1", "name": "Ahmed", "gender": "male", "dialect": "saudi", "style": "natural"},
+    # Saudi (Hijazi)
+    "lama": {"id": "ar-hijazi-female-1", "name": "Lama", "gender": "female", "dialect": "hijazi", "style": "warm"},
+    # Kuwaiti
+    "hamad": {"id": "ar-kuwaiti-male-1", "name": "Hamad", "gender": "male", "dialect": "kuwaiti", "style": "energetic"},
+}
+
+# ========== Dialect-to-Voice Mapping ==========
+
+DIALECT_VOICE_IDS = {
+    "saudi": {
+        "male": ["ar-najdi-male-2", "ar-egyptian-male-1"],
+        "female": "ar-najdi-female-1",
+    },
+    "hijazi": {"male": None, "female": "ar-hijazi-female-1"},
+    "kuwaiti": {"male": "ar-kuwaiti-male-1", "female": None},
+    "fusha": {"male": None, "female": None},  # fusha uses gTTS
+}
