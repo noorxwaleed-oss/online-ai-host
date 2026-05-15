@@ -36,7 +36,10 @@ def agent_analyzer(source_input, user_language_choice = "Arabic"):
 
         # 4. Final Output
         print(f"✅ Success! Extracted {len(analysis.get('topics', []))} topics.\n" + "-"*40)
-        print(json.dumps(analysis, indent=2, ensure_ascii=False))
+        resulte = json.dumps(analysis, indent=2, ensure_ascii=False)
+        print(resulte)
+        return resulte
+        # print(json.dumps(analysis, indent=2, ensure_ascii=False))
 
     except Exception as e:
         print(f"❌ Error: {e}")
