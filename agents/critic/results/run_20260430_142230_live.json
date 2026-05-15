@@ -1,0 +1,369 @@
+{
+  "metrics": {
+    "total_cases": 10,
+    "successful": 10,
+    "errored": 0,
+    "non_borderline_evaluated": 9,
+    "agreements": 9,
+    "disagreements": 0,
+    "agreement_rate": 1.0,
+    "by_expected_verdict": {
+      "PASS": {
+        "total": 4,
+        "agreed": 4
+      },
+      "REJECT": {
+        "total": 5,
+        "agreed": 5
+      }
+    },
+    "avg_latency_ms": 4300,
+    "total_tokens_used": 14948,
+    "disagreement_case_ids": [],
+    "errored_case_ids": []
+  },
+  "results": [
+    {
+      "case_id": "golden_001",
+      "language": "en",
+      "topic": "tech",
+      "expected_verdict": "PASS",
+      "actual_verdict": "PASS",
+      "actual_passed": true,
+      "hard_fail_triggered": false,
+      "scores": {
+        "naturalness_and_tone_match": 4,
+        "factual_grounding": 5,
+        "structural_coherence": 4,
+        "engagement": 4
+      },
+      "weighted_average": 4.25,
+      "failed_dimensions": [],
+      "feedback_summary": {
+        "naturalness_and_tone_match": "Minor stiffness in dialogue",
+        "structural_coherence": "Slightly abrupt closing",
+        "engagement": "Limited specific examples or anecdotes"
+      },
+      "strengths": [
+        "The script stays factually grounded in the provided key points",
+        "The conversation flows logically and is easy to follow",
+        "The tone generally matches the 'casual, energetic' voice label"
+      ],
+      "agrees": true,
+      "is_borderline": false,
+      "agreement_reason": "Expected PASS, got PASS. factual_grounding=5, weighted_avg=4.25.",
+      "expected_reasoning": "All claims trace to key_points. Tone is casual and matches the voice. Host reacts naturally; flows well; clear arc.",
+      "elapsed_ms": 1304,
+      "tokens_used": 1510,
+      "error": null
+    },
+    {
+      "case_id": "golden_002",
+      "language": "en",
+      "topic": "health",
+      "expected_verdict": "PASS",
+      "actual_verdict": "PASS",
+      "actual_passed": true,
+      "hard_fail_triggered": false,
+      "scores": {
+        "naturalness_and_tone_match": 4,
+        "factual_grounding": 5,
+        "structural_coherence": 5,
+        "engagement": 4
+      },
+      "weighted_average": 4.45,
+      "failed_dimensions": [],
+      "feedback_summary": {
+        "naturalness_and_tone_match": "The tone, while generally calm and measured, occasionally feels slightly formal for a conversational podcast.",
+        "engagement": "The conversation, while informative, lacks varied question types and specific examples to keep the listener engaged."
+      },
+      "strengths": [
+        "The script stays factually grounded in the provided key points.",
+        "The conversation has a clear and logical structure.",
+        "The guest's explanations are clear and easy to follow."
+      ],
+      "agrees": true,
+      "is_borderline": false,
+      "agreement_reason": "Expected PASS, got PASS. factual_grounding=5, weighted_avg=4.45.",
+      "expected_reasoning": "Calm, measured tone matches the voice. All facts grounded. Good explanatory flow.",
+      "elapsed_ms": 962,
+      "tokens_used": 1512,
+      "error": null
+    },
+    {
+      "case_id": "golden_003",
+      "language": "en",
+      "topic": "business",
+      "expected_verdict": "PASS",
+      "actual_verdict": "PASS",
+      "actual_passed": true,
+      "hard_fail_triggered": false,
+      "scores": {
+        "naturalness_and_tone_match": 4,
+        "factual_grounding": 5,
+        "structural_coherence": 5,
+        "engagement": 4
+      },
+      "weighted_average": 4.45,
+      "failed_dimensions": [],
+      "feedback_summary": {
+        "naturalness_and_tone_match": "Minor stiffness in dialogue",
+        "engagement": "Lack of specific examples or varied question types"
+      },
+      "strengths": [
+        "Clear and concise explanation of FlashPay's success factors",
+        "Good use of transitional phrases to connect ideas",
+        "Relevant and timely discussion of FlashPay's expansion plans"
+      ],
+      "agrees": true,
+      "is_borderline": false,
+      "agreement_reason": "Expected PASS, got PASS. factual_grounding=5, weighted_avg=4.45.",
+      "expected_reasoning": "Strong hook, varied questions, all facts grounded, energetic tone consistent with voice.",
+      "elapsed_ms": 894,
+      "tokens_used": 1491,
+      "error": null
+    },
+    {
+      "case_id": "golden_004",
+      "language": "ar",
+      "topic": "education",
+      "expected_verdict": "PASS",
+      "actual_verdict": "PASS",
+      "actual_passed": true,
+      "hard_fail_triggered": false,
+      "scores": {
+        "naturalness_and_tone_match": 4,
+        "factual_grounding": 5,
+        "structural_coherence": 4,
+        "engagement": 3
+      },
+      "weighted_average": 4.0,
+      "failed_dimensions": [],
+      "feedback_summary": {
+        "naturalness_and_tone_match": "Minor stiffness in dialogue",
+        "structural_coherence": "Somewhat abrupt transition to the conclusion",
+        "engagement": "Lack of specific examples or varied question types"
+      },
+      "strengths": [
+        "The script stays factually grounded in the provided key points",
+        "The tone generally matches the warm and conversational tone label",
+        "The discussion is easy to follow and understand"
+      ],
+      "agrees": true,
+      "is_borderline": false,
+      "agreement_reason": "Expected PASS, got PASS. factual_grounding=5, weighted_avg=4.0.",
+      "expected_reasoning": "Arabic script with appropriate Egyptian Arabic tone. All facts grounded. Natural conversational flow.",
+      "elapsed_ms": 1133,
+      "tokens_used": 1532,
+      "error": null
+    },
+    {
+      "case_id": "golden_005",
+      "language": "en",
+      "topic": "climate",
+      "expected_verdict": "REJECT",
+      "actual_verdict": "REJECT",
+      "actual_passed": false,
+      "hard_fail_triggered": false,
+      "scores": {
+        "naturalness_and_tone_match": 2,
+        "factual_grounding": 5,
+        "structural_coherence": 4,
+        "engagement": 3
+      },
+      "weighted_average": 3.4,
+      "failed_dimensions": [
+        "naturalness_and_tone_match"
+      ],
+      "feedback_summary": {
+        "naturalness_and_tone_match": "The script's tone does not match the 'casual, energetic' voice due to overly formal language",
+        "engagement": "The conversation is mostly flat with few specific examples or engaging stories"
+      },
+      "strengths": [
+        "The script stays factually grounded in the provided key points",
+        "It has a clear and logical structure with a recognizable intro, progression, and closing"
+      ],
+      "agrees": true,
+      "is_borderline": false,
+      "agreement_reason": "Expected REJECT, got REJECT. factual_grounding=5, weighted_avg=3.4.",
+      "expected_reasoning": "Reads like an article split into two voices. No reactions, no interruptions, formal essay phrases ('Furthermore', 'In conclusion'). Tone clashes with 'casual, energetic' voice.",
+      "elapsed_ms": 925,
+      "tokens_used": 1511,
+      "error": null
+    },
+    {
+      "case_id": "golden_006",
+      "language": "en",
+      "topic": "history",
+      "expected_verdict": "REJECT",
+      "actual_verdict": "REJECT",
+      "actual_passed": false,
+      "hard_fail_triggered": false,
+      "scores": {
+        "naturalness_and_tone_match": 1,
+        "factual_grounding": 5,
+        "structural_coherence": 4,
+        "engagement": 2
+      },
+      "weighted_average": 2.85,
+      "failed_dimensions": [
+        "naturalness_and_tone_match",
+        "engagement"
+      ],
+      "feedback_summary": {
+        "naturalness_and_tone_match": "The tone of the script does not match the formal, scholarly tone of the voice",
+        "engagement": "The conversation is mostly flat and lacks specific examples or varied question types"
+      },
+      "strengths": [
+        "The script stays factually grounded in the provided key points",
+        "The overall structure of the conversation is logical and easy to follow"
+      ],
+      "agrees": true,
+      "is_borderline": false,
+      "agreement_reason": "Expected REJECT, got REJECT. factual_grounding=5, weighted_avg=2.85.",
+      "expected_reasoning": "Script uses heavy slang ('bruh', 'lit', 'no cap') but voice is 'formal, scholarly'. Severe tone mismatch.",
+      "elapsed_ms": 8317,
+      "tokens_used": 1487,
+      "error": null
+    },
+    {
+      "case_id": "golden_007",
+      "language": "en",
+      "topic": "tech",
+      "expected_verdict": "REJECT",
+      "actual_verdict": "REJECT",
+      "actual_passed": false,
+      "hard_fail_triggered": true,
+      "scores": {
+        "naturalness_and_tone_match": 4,
+        "factual_grounding": 2,
+        "structural_coherence": 2,
+        "engagement": 3
+      },
+      "weighted_average": 2.85,
+      "failed_dimensions": [
+        "factual_grounding",
+        "structural_coherence"
+      ],
+      "feedback_summary": {
+        "factual_grounding": "Unsupported claim about JavaScript dominating the web",
+        "structural_coherence": "Abrupt topic change and lack of logical progression",
+        "naturalness_and_tone_match": "Somewhat formal tone in some turns"
+      },
+      "strengths": [
+        "The script starts with a relevant topic",
+        "The conversation touches on multiple key points"
+      ],
+      "agrees": true,
+      "is_borderline": false,
+      "agreement_reason": "Expected REJECT, got REJECT. factual_grounding=2, weighted_avg=2.85.",
+      "expected_reasoning": "Topics jump around randomly. No intro, no proper closing. Disjointed; reader can't follow what the episode is about.",
+      "elapsed_ms": 7147,
+      "tokens_used": 1404,
+      "error": null
+    },
+    {
+      "case_id": "golden_008",
+      "language": "en",
+      "topic": "tech",
+      "expected_verdict": "REJECT",
+      "actual_verdict": "REJECT",
+      "actual_passed": false,
+      "hard_fail_triggered": true,
+      "scores": {
+        "naturalness_and_tone_match": 4,
+        "factual_grounding": 2,
+        "structural_coherence": 4,
+        "engagement": 3
+      },
+      "weighted_average": 3.25,
+      "failed_dimensions": [
+        "factual_grounding"
+      ],
+      "feedback_summary": {
+        "factual_grounding": "Unsupported claims",
+        "engagement": "Lack of varied question types and specific examples",
+        "naturalness_and_tone_match": "Minor tone mismatch"
+      },
+      "strengths": [
+        "Clear and concise dialogue",
+        "Relevant discussion about the Vision Pro 2's features"
+      ],
+      "agrees": true,
+      "is_borderline": false,
+      "agreement_reason": "Hallucination case: expected REJECT with hard_fail=True and factual_grounding≤3. Got verdict=REJECT, hard_fail=True, factual_grounding=2.",
+      "expected_reasoning": "Script invents specific statistics ('43% of users') and a quote ('Tim Cook said...') NOT in key_points. Classic hallucination.",
+      "elapsed_ms": 7396,
+      "tokens_used": 1476,
+      "error": null
+    },
+    {
+      "case_id": "golden_009",
+      "language": "ar",
+      "topic": "health",
+      "expected_verdict": "REJECT",
+      "actual_verdict": "REJECT",
+      "actual_passed": false,
+      "hard_fail_triggered": true,
+      "scores": {
+        "naturalness_and_tone_match": 4,
+        "factual_grounding": 2,
+        "structural_coherence": 4,
+        "engagement": 3
+      },
+      "weighted_average": 3.25,
+      "failed_dimensions": [
+        "factual_grounding"
+      ],
+      "feedback_summary": {
+        "factual_grounding": "Unsupported claim about a specific study from the University of Cairo in 2025 and a precise dosage of 2000 international units daily",
+        "engagement": "Lack of varied question types and specific examples to maintain listener interest",
+        "naturalness_and_tone_match": "Minor stiffness in dialogue, particularly in the guest's responses, which could be more conversational"
+      },
+      "strengths": [
+        "Clear and relevant topic introduction",
+        "Basic structure of the conversation is logical and easy to follow"
+      ],
+      "agrees": true,
+      "is_borderline": false,
+      "agreement_reason": "Hallucination case: expected REJECT with hard_fail=True and factual_grounding≤3. Got verdict=REJECT, hard_fail=True, factual_grounding=2.",
+      "expected_reasoning": "Script invents a specific WHO statistic ('80% من سكان الشرق الأوسط') and study findings not present in key_points.",
+      "elapsed_ms": 7577,
+      "tokens_used": 1550,
+      "error": null
+    },
+    {
+      "case_id": "golden_010",
+      "language": "en",
+      "topic": "business",
+      "expected_verdict": "BORDERLINE",
+      "actual_verdict": "PASS",
+      "actual_passed": true,
+      "hard_fail_triggered": false,
+      "scores": {
+        "naturalness_and_tone_match": 4,
+        "factual_grounding": 5,
+        "structural_coherence": 4,
+        "engagement": 3
+      },
+      "weighted_average": 4.0,
+      "failed_dimensions": [],
+      "feedback_summary": {
+        "naturalness_and_tone_match": "The tone is mostly professional and neutral but lacks natural conversational flow and reactions",
+        "structural_coherence": "The interview lacks a strong closing or a summary of key points",
+        "engagement": "The conversation is somewhat flat and lacks specific examples or varied question types"
+      },
+      "strengths": [
+        "The script accurately conveys the key points from the study without introducing unsupported claims",
+        "The guest's responses directly address the host's questions, maintaining a clear and relevant conversation"
+      ],
+      "agrees": true,
+      "is_borderline": true,
+      "agreement_reason": "Borderline case; Critic returned PASS (acceptable)",
+      "expected_reasoning": "Reasonable people could score this 3 or 4 on naturalness. It's grounded and structured but has a faintly stiff quality. We accept either PASS or REJECT here — used to measure how the Critic handles ambiguity.",
+      "elapsed_ms": 7345,
+      "tokens_used": 1475,
+      "error": null
+    }
+  ]
+}
