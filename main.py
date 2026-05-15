@@ -11,13 +11,10 @@ from cover_agent import CoverArtAgent
 
 agent = CoverArtAgent()
 
-image = agent.generate(
-    metadata=metadata,
+image = agent.invoke(
+    analyzer_output=metadata,
     style="Minimalist",
     aspect_ratio="2:3"
 )
 
-# Save image
-image.save("podcast_cover.png")
-
-print("✅ Cover saved as podcast_cover.png")
+image
