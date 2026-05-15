@@ -10,7 +10,7 @@ from analyzer import run_smart_analysis, translator
 
 
 
-source_input  = "https://www.beinsports.com/en-us/soccer/premier-league/articles/historic-crisis-chelsea-match-one-of-their-worst-losing-streaks-in-premier-league-history-2026-05-04" 
+source_input  = "" 
 user_language_choice = "Arabic"
 
 def extract_json(text):
