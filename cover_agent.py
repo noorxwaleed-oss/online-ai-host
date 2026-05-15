@@ -164,3 +164,13 @@ class CoverArtAgent:
             stroke_width=4,
             stroke_fill="black"
         )
+
+
+   def invoke(self, analyzer_output, style="Minimalist", aspect_ratio="1:1"):
+        
+        # استدعاء دالة التوليد مباشرة باستخدام البيانات المستلمة
+        return self.generate(
+            metadata=analyzer_output, 
+            style=style, 
+            aspect_ratio=aspect_ratio
+        )
