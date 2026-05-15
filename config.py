@@ -13,6 +13,7 @@ munsit_api_key1 = os.getenv("MUNSIT_API_KEY1")
 munsit_api_key2 = os.getenv("MUNSIT_API_KEY2")
 munsit_api_key3 = os.getenv("MUNSIT_API_KEY3")
 
+
 cloudinary_config =cloudinary.config(
     cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
     api_key=os.getenv('CLOUDINARY_API_KEY'),
@@ -32,3 +33,14 @@ for i in range(1, 10):
     key = os.getenv(f"MUNSIT_API_KEY{i}")
     if key:
         MUNSIT_KEYS.append(key)
+
+
+        #   ================ content analyzer 
+        from dotenv import load_dotenv
+import os
+load_dotenv()
+
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+
+
+
