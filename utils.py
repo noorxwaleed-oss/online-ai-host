@@ -10,11 +10,16 @@ def to_str_script(script):
   # print(json.dumps(script, indent=4, ensure_ascii=False))
   # print(script["total_pages"])
   script_str = ''
-  for page in script["pages"]:
-      # print(f"Page {page['page_number']}:")
-      # print(page["content"])
-      script_str += f"{page['content']}\n\n"
-      # print("\n---\n")
+  # print(script["title"])
+  # print(script["podcast_name"])
+  # print(script["estimated_total_words"])
+  # print(script["content"])
+  script_str = script["content"]
+  # for page in script["content"]:
+  #     # print(f"Page {page['page_number']}:")
+  #     # print(page["content"])
+  #     script_str += f"{page['content']}\n\n"
+  #     # print("\n---\n")
 
 
   return script_str

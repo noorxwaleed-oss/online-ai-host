@@ -1,8 +1,8 @@
 from prompts import textGeneration_prompt
 from llms import generateTextLlm
-from prompts import clipsGeneration_prompt
+
 textGeneration_chat_chain= textGeneration_prompt | generateTextLlm 
-clipsGeneration_chat_chain = clipsGeneration_prompt | generateTextLlm
+
 """Chain wiring for the Audio Production Agent."""
 from audio import text_to_speech, generate_podcast_from_script
 from llms import get_elevenlabs_key, get_munsit_key
