@@ -11,13 +11,13 @@ from analyzer import run_smart_analysis, translator
 
 
 source_input  = "" 
-user_language_choice = "Arabic"
+# user_language_choice = "Arabic"
 
 def extract_json(text):
     
     match = re.search(r'(\{.*\})', str(text), re.DOTALL)
     return json.loads(match.group(1)) if match else {}
-def agent_analyzer(source_input, user_language_choice = "Arabic"):
+def agent_analyzer(source_input, user_language_choice ):
 
     
     try:
