@@ -9,6 +9,7 @@ textGeneration_base_url = os.getenv("TEXTGENERATION_BASE_URL")
 elevenlabs_api_key1 = os.getenv("ELEVENLABS_API_KEY1")
 elevenlabs_api_key2 = os.getenv("ELEVENLABS_API_KEY2")
 elevenlabs_api_key3 = os.getenv("ELEVENLABS_API_KEY3")
+elevenlabs_api_key4 = os.getenv("ELEVENLABS_API_KEY4")
 munsit_api_key1 = os.getenv("MUNSIT_API_KEY1")
 munsit_api_key2 = os.getenv("MUNSIT_API_KEY2")
 munsit_api_key3 = os.getenv("MUNSIT_API_KEY3")
@@ -57,6 +58,7 @@ CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET", "")
 ELEVENLABS_KEYS = []
 for i in range(1, 10):
     key = os.getenv(f"ELEVENLABS_API_KEY{i}")
+    print(f"<<<<<<<<<<<<<<<<< {key}>>>>>>>>>>>>>>>>>>>>")
     if key:
         ELEVENLABS_KEYS.append(key)
 
