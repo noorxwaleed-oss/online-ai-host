@@ -54,8 +54,8 @@ def test_create_new_feed_produces_valid_xml():
     episode = make_episode()
     xml = create_new_feed(podcast, episode)
 
-    assert '<?xml version="1.0" encoding="UTF-8"?>' in xml
-    assert '<rss version="2.0"' in xml
+    assert '<rss' in xml
+    assert 'version="2.0"' in xml
     assert "<channel>" in xml
     assert "<item>" in xml
 

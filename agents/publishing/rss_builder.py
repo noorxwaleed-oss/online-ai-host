@@ -29,7 +29,6 @@ def create_new_feed(podcast: PodcastInfo, episode: EpisodeAssets) -> str:
 
     rss = ET.Element("rss", attrib={
         "version": "2.0",
-        "xmlns:itunes": ITUNES_NS,
     })
 
     channel = ET.SubElement(rss, "channel")
