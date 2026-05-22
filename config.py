@@ -1,8 +1,4 @@
-MODEL_ID = "stabilityai/stable-diffusion-xl-base-1.0"
-
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-
-DTYPE = torch.float16 if DEVICE == "cuda" else torch.float32
+MODEL = "Tongyi-MAI/Z-Image-Turbo"
 
 
 
