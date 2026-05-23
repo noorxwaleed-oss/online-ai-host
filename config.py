@@ -58,7 +58,7 @@ CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET", "")
 ELEVENLABS_KEYS = []
 for i in range(1, 10):
     key = os.getenv(f"ELEVENLABS_API_KEY{i}")
-    print(f"<<<<<<<<<<<<<<<<< {key}>>>>>>>>>>>>>>>>>>>>")
+  
     if key:
         ELEVENLABS_KEYS.append(key)
 

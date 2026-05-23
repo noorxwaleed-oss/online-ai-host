@@ -116,6 +116,7 @@ def upload_to_cloudinary(audio_bytes: bytes, file_ext: str = None) -> Dict[str, 
             'format': file_ext.lstrip('.'),
         }
     except Exception as e:
+        print(f"Error uploading to Cloudinary: {e}")
         return {'success': False, 'error': str(e)}
     finally:
         if os.path.exists(filename):
