@@ -1,6 +1,7 @@
 from fastapi import FastAPI , Query
 from pydantic import BaseModel 
 from fastapi.middleware.cors import CORSMiddleware
+from storage_services import current_time, generate_id
 
 
 
@@ -15,7 +16,7 @@ class multiAgent(BaseModel):
     voice_id: str
     host_style: str
     guest_style: str
-    user_id: str
+    user_id: str 
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -27,10 +28,15 @@ app.add_middleware(
 @app.post("/")
 async def get_podcast_details(host_name: str, host_gender: str, guest_name: str, guest_gender: str, 
                         podcast_name: str, language: str, content: str , voice_id_host: str,
-                          voice_id_guest: str , host_style: str, guest_style: str, user_id: str):
+                          voice_id_guest: str , host_style: str, guest_style: str):
     try:
  #=====================================================
       # content_analyzer agnet 
+      user_id = generate_id()
+
+    
+      
+
       from content_analyzer import agent_analyzer
       from audio import generate_podcast_from_script
       import json
@@ -57,7 +63,7 @@ async def get_podcast_details(host_name: str, host_gender: str, guest_name: str,
       print(f"\n🎬 Generated Script:\n{script_str}")
   #=====================================================
       # store the script in Cloudinary 
-      from storage_service import create_project, save_input, save_script
+      from storage_services import create_project, save_input, save_script
       
       project_ID = create_project(user_id)
       save_input(user_id, project_ID, "pdf_path", pdf_path = content)
@@ -150,11 +156,11 @@ async def get_podcast_details(host_name: str, host_gender: str, guest_name: str,
           print(f"Publishing failed: {result.error_message}")
 
 
-      from storage_service import list_user_projects
+      from storage_services import list_user_projects
       list_user_projects(user_id)
   #======================================================
       # Retrieve and save metadata    
-      from storage_service import get_project_metadata, save_metadata
+      from storage_services import get_project_metadata, save_metadata
       metadata =   get_project_metadata(user_id, project_ID)
       saved_meatadata = save_metadata(metadata, user_id, project_ID)
       print(saved_meatadata)
