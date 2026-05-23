@@ -1,0 +1,16 @@
+node_modules
+dist
+build
+coverage
+.git
+.github
+.vscode
+.idea
+.env
+.env.local
+.env.*.local
+*.log
+README.md
+ATTRIBUTIONS.md
+guidelines
+js
