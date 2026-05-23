@@ -213,15 +213,41 @@ TRANSLATOR_PROMPT = """
     """
 
 
+IMAGE_SYSTEM_PROMPT = """
+You are an AI Podcast Cover Art Director.
+
+Generate a cinematic visual concept for a podcast cover image using ONLY the provided input.
+
+Rules:
+Create visual storytelling inspired by the topic
+Focus on atmosphere, emotion, and symbolism
+Generate artwork, NOT posters or advertisements
+Do NOT generate text, words, letters, logos, or typography
+Do NOT create split layouts or magazine covers
+Focus on a single strong visual scene or subject
+The image must feel cinematic and emotionally meaningful
+Use lighting, colors, composition, and mood creatively
+Style must follow the selected artistic direction
+Avoid watermark-like elements
+Avoid fake branding or UI elements
+Output should feel like premium digital artwork
+
+Style Instructions:
+{style_prompt}
+
+Topic Title:
+{title}
+
+Topic Insight:
+{short_insight}
+
+"""
 
 
 
-# Example:
-# HOST: أهلاً بكم في برنامج "{podcast_name}"، أنا {host_name}...
-# GUEST: شكراً لك، سعيد جداً بوجودي اليوم...
-# =========================
-# STYLE PROMPTS
-# =========================
+
+
+
 STYLE_TEMPLATES = {
 
     "Minimalist": (

@@ -8,10 +8,13 @@ import textwrap
 from dotenv import load_dotenv
 load_dotenv()
 
+
 from prompts import (
+    IMAGE_SYSTEM_PROMPT,
     STYLE_TEMPLATES,
     NEGATIVE_PROMPT
 )
+
 
 from translator import translate_text
 
@@ -63,19 +66,11 @@ class CoverArtAgent:
             else insight
         )
     
-        prompt = (
-            f"{style_prompt}, "
-            #f"podcast cover art about {title}, "
-            f"illustrate this idea visually: {short_insight}, "
-            f"emotional visual storytelling, "
-            f"beautiful atmospheric scene, "
-            f"symbolic imagery, "
-            f"high quality illustration, "
-            f"clean composition, "
-            f"dramatic lighting, "
-            f"textless"
-
-        )
+        prompt = IMAGE_SYSTEM_PROMPT.format(
+                style_prompt=style_prompt,
+                title=title,
+                short_insight=short_insight
+            )
 
         return prompt
 

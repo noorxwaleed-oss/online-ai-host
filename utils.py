@@ -6,6 +6,14 @@ def tojson (text):
   
   return data
 
+def parse_script_for_save(text: str):
+    lines = text.split("\n")
+
+    return {
+        "content": text,
+        "lines": lines
+    }
+
 def to_str_script(script):
   # print(json.dumps(script, indent=4, ensure_ascii=False))
   # print(script["total_pages"])
@@ -183,3 +191,25 @@ def load_data(source):
     else:
         loader = PyPDFLoader(source)
     return loader.load()
+
+
+
+
+
+from urllib.parse import urlparse
+import os
+
+
+def detect_input_type(value: str):
+
+    # Check if URL
+    parsed = urlparse(value)
+
+    if parsed.scheme in ("http", "https"):
+        return "url"
+
+    # Check if PDF file
+    elif os.path.isfile(value) and value.lower().endswith(".pdf"):
+        return "pdf"
+
+    return "unknown"

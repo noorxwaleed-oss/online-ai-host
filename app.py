@@ -2,6 +2,7 @@ from fastapi import FastAPI , Query
 from pydantic import BaseModel 
 from fastapi.middleware.cors import CORSMiddleware
 from storage_services import current_time, generate_id
+from utils import detect_input_type, parse_script_for_save
 
 
 
@@ -13,10 +14,12 @@ class multiAgent(BaseModel):
     podcast_name: str
     language: str
     content :str
-    voice_id: str
+    voice_id_host: str
+    voice_id_guest: str
     host_style: str
     guest_style: str
     user_id: str 
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -28,11 +31,12 @@ app.add_middleware(
 @app.post("/")
 async def get_podcast_details(host_name: str, host_gender: str, guest_name: str, guest_gender: str, 
                         podcast_name: str, language: str, content: str , voice_id_host: str,
-                          voice_id_guest: str , host_style: str, guest_style: str):
+                          voice_id_guest: str , host_style: str, guest_style: str , user_id: str):
     try:
+
  #=====================================================
       # content_analyzer agnet 
-      user_id = generate_id()
+      # user_id = generate_id()
 
     
       
@@ -55,20 +59,31 @@ async def get_podcast_details(host_name: str, host_gender: str, guest_name: str,
           "guest_gender": guest_gender,
       })
 
-      from utils import tojson 
-      from utils import to_str_script 
-      script = tojson(script)
-      script_str = to_str_script(script)
+      from utils import tojson ,to_str_script
+     
+      json_script = tojson(script)
+      script_str = to_str_script(json_script)
       # Script
       print(f"\n🎬 Generated Script:\n{script_str}")
   #=====================================================
-      # store the script in Cloudinary 
-      from storage_services import create_project, save_input, save_script
-      
-      project_ID = create_project(user_id)
-      save_input(user_id, project_ID, "pdf_path", pdf_path = content)
-      saved_script = save_script(script_json=script_str, user_id=user_id, project_id=project_ID)
-      print(f"\n💾 Script saved to Cloudinary: {saved_script['url']}")
+    # store the script in Cloudinary and get the URL
+
+      from storage_services import create_project, save_agent_output, save_input
+      dic_script = parse_script_for_save(script_str)
+      project = create_project(user_id) 
+      project_id =  project["project_id"]  
+      content_type = detect_input_type(content)
+      if  content_type =='pdf':
+          pdf_path = content
+          source_url = None
+      elif content_type =='url':
+          pdf_path = None
+          source_url =  content 
+      else:
+          print(" error unknown input : please enter url or pdf ")      
+      save_input(user_id, project_id,content_type,pdf_path,source_url)
+      savedscript = save_agent_output(user_id, project_id, "script",dic_script)
+    
   #=====================================================
       #  audio generation agent
       provider = 'elevenlabs' if language.lower() == 'english' else 'munsit'
@@ -94,7 +109,7 @@ async def get_podcast_details(host_name: str, host_gender: str, guest_name: str,
       }
 
       # Generate podcast
-      result = await generate_podcast_from_script(
+      result_audio = await generate_podcast_from_script(
           raw_text= script_str,
           host_config=host_config,
           guest_config=guest_config,
@@ -102,25 +117,65 @@ async def get_podcast_details(host_name: str, host_gender: str, guest_name: str,
       )
 
       print(f"\n🎉 Final Result:")
-      print(f"   Success: {result.get('success')}")
-      print(f"   Audio URL: {result.get('audio_url')}")
-      print(f"   Total duration: {result.get('duration', 0):.2f} seconds")
+      print(f"   Success: {result_audio.get('success')}")
+      print(f"   Audio URL: {result_audio.get('audio_url')}")
+      print(f"   Total duration: {result_audio.get('duration', 0):.2f} seconds")
 
-      if result.get('audio_url'):
+      if result_audio.get('audio_url'):
           import requests
           from IPython.display import Audio, display
-          response = requests.get(result['audio_url'])
+          response = requests.get(result_audio['audio_url'])
           # display(Audio(response.content))
-      message = "Podcast generated successfully!" if result.get('success') else "Failed to generate podcast."
-      audio_output = {"message": message, "audio_url": result.get('audio_url'), "duration": result.get('duration', 0)}
-      # return {"message": message, "audio_url": result.get('audio_url'), "duration": result.get('duration', 0)}
+      message = "Podcast generated successfully!" if result_audio.get('success') else "Failed to generate podcast."
+      audio_output = {"message": message, "audio_url": result_audio.get('audio_url'), "duration": result_audio.get('duration', 0)}
+      # return {"message": message, "audio_url": result_audio.get('audio_url'), "duration": result_audio.get('duration', 0)}
 
 
       #======================================================
+      # save oudio agent
+      from storage_services import save_audio_output
+      save_audio_output(user_id, project_id, result_audio['audio_url']  )
+
+
+
+
+
+
+      # ======================================================
+
+
+      from cover_agent import CoverArtAgent
+
+
+      # with open(content, "r", encoding="utf-8") as f:
+      #     metadata = json.load(f)
+
+      
+      # =========================
+      # GENERATE IMAGE
+      # =========================
+
+      agent = CoverArtAgent()
+
+      image = agent.generate(
+          metadata=key_points_dict,
+          style="Colorful",
+          aspect_ratio="2:3"
+      )
+
+      image.show()
+      # ======================================================
+
+
+      # save cover_art agent
+      from storage_services import save_cover_output
+      coverArt_output = save_cover_output(user_id , project_id , image)
+
+      # ======================================================
       # publishing agent 
       from pub_models import EpisodeAssets, PodcastInfo, PublishingInput
       from publishing_agent import PublishingAgent
-      from storage_service import get_feed_url, save_feed_url
+      from storage_services import get_feed_url, save_feed_url
 
 
       existing_feed = get_feed_url(user_id)
@@ -128,12 +183,12 @@ async def get_podcast_details(host_name: str, host_gender: str, guest_name: str,
       result = PublishingAgent().publish(
           PublishingInput(
               episode=EpisodeAssets(
-                  script_id =saved_script['public_id'],  # from Cell 14
+                  script_id = savedscript['public_id'],  # from Cell 14
                   title=title,  # from Cell 5
                   description=key_points_dict['topics'][0].get('insight', 'AI-generated podcast episode'),
-                  audio_url=result['audio_url'],        # from Cell 16
-                  cover_image_url="https://res.cloudinary.com/duxc6oeju/image/upload/v1779454098/IMG-20260522-WA0015_dwdfqn.jpg",  # from Cell 3
-                  duration_seconds=int(result.get('duration', 0)),
+                  audio_url= result_audio['audio_url'],        # from Cell 16
+                  cover_image_url= coverArt_output["image_url"],  # from Cell 3
+                  duration_seconds=int(result_audio.get('duration', 0)),
               ),
               podcast=PodcastInfo(
                   podcast_title="AI Host Interview",
@@ -141,7 +196,7 @@ async def get_podcast_details(host_name: str, host_gender: str, guest_name: str,
                   author=user_id,
                   language="ar",
                   category="Technology",
-                  cover_image_url="https://res.cloudinary.com/duxc6oeju/image/upload/v1779454098/IMG-20260522-WA0015_dwdfqn.jpg",
+                  cover_image_url= coverArt_output["image_url"],
               ),
               existing_feed_url= existing_feed,
           ),
@@ -159,14 +214,22 @@ async def get_podcast_details(host_name: str, host_gender: str, guest_name: str,
       from storage_services import list_user_projects
       list_user_projects(user_id)
   #======================================================
-      # Retrieve and save metadata    
-      from storage_services import get_project_metadata, save_metadata
-      metadata =   get_project_metadata(user_id, project_ID)
-      saved_meatadata = save_metadata(metadata, user_id, project_ID)
-      print(saved_meatadata)
+    #   # Retrieve and save metadata    
+    #   from storage_services import get_project_metadata, save_metadata
+    #   metadata =   get_project_metadata(user_id, project_id)
+    #   saved_meatadata = save_metadata(metadata, user_id,  project_id)
+    #   print(saved_meatadata)
       return audio_output
     except Exception as e:
         print(f"Error: {e}")
         return {"error": str(e)}
+    
+
+
+
+
+
+    # ========================================================
+
 
 
