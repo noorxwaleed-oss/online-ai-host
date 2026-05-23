@@ -3,7 +3,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import requests
-from config import MODEL, ASPECT_RATIOS
+from config import MODEL, ASPECT_RATIOS ,HF_token_coverArt
 import textwrap
 from dotenv import load_dotenv
 load_dotenv()
@@ -22,7 +22,7 @@ class CoverArtAgent:
 
         self.client = InferenceClient(
             provider="fal-ai",
-            api_key=os.environ["HF_TOKEN"],
+            api_key=os.environ["HF_TOKEN_coverArt"],
         )
         self.model = MODEL
         

@@ -13,6 +13,7 @@ elevenlabs_api_key4 = os.getenv("ELEVENLABS_API_KEY4")
 munsit_api_key1 = os.getenv("MUNSIT_API_KEY1")
 munsit_api_key2 = os.getenv("MUNSIT_API_KEY2")
 munsit_api_key3 = os.getenv("MUNSIT_API_KEY3")
+HF_token_coverArt = os.getenv("HF_TOKEN_coverArt")
 
 
 cloudinary_config =  cloudinary.config(

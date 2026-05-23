@@ -67,7 +67,7 @@ def _upload_json(data: dict, folder: str, public_id: str) -> dict:
         RuntimeError: If upload fails.
     """
 
-    json_str = json.dumps(data, indent=2)
+    json_str = json.dumps(data, indent=2 , ensure_ascii=False)
 
     with tempfile.NamedTemporaryFile(
         mode="w",
@@ -345,6 +345,8 @@ def save_agent_output(
 
 # =========================================================
 # Audio Storage
+# =========================================================
+
 def save_audio_output(user_id, project_id, audio_path):
     folder = f"{build_project_folder(user_id, project_id)}/audio_agent"
 
@@ -358,6 +360,33 @@ def save_audio_output(user_id, project_id, audio_path):
 
     return {
         "audio_url": result["secure_url"],
+        "public_id": result["public_id"]
+    }
+
+# =========================================================
+# Cover Image Storage
+
+import cloudinary.uploader
+import tempfile
+
+def save_cover_output(user_id, project_id, image):
+    folder = f"users/{user_id}/projects/{project_id}/cover_agent"
+
+    # save PIL image to temp file
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        image.save(tmp.name, format="PNG")
+        temp_path = tmp.name
+
+    result = cloudinary.uploader.upload(
+        temp_path,
+        folder=folder,
+        public_id="cover_image",
+        overwrite=True,
+        resource_type="image"
+    )
+
+    return {
+        "image_url": result["secure_url"],
         "public_id": result["public_id"]
     }
 
