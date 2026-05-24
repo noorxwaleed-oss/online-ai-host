@@ -468,24 +468,44 @@ def api_latest_project(
     current_user_id: Optional[str] = Depends(get_current_user_id),
 ):
     require_owner(user_id, current_user_id)
-    project_ids = list_user_projects(user_id)
-    if not project_ids:
+
+    # Look up each project's `project.json` (created by storage_services.create_project)
+    # and sort by Cloudinary's `created_at`. This is reliable; the previous logic
+    # tried to fetch `metadata.json`, which create_project never writes, so it
+    # always fell back to alphabetical order and returned a stale project.
+    try:
+        listing = cloudinary.api.resources(
+            type="upload",
+            prefix=f"users/{user_id}/projects",
+            resource_type="raw",
+            max_results=500,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Cloudinary listing failed: {e}")
+
+    latest_project_id = None
+    latest_created_at = ""
+    for res in listing.get("resources", []) or []:
+        public_id = res.get("public_id", "")
+        # Cloudinary stores raw files with their extension in public_id, so
+        # storage_services.create_project produces:
+        #   users/{user_id}/projects/{project_id}/project.json
+        if not public_id.endswith("/project.json"):
+            continue
+        parts = public_id.split("/")
+        # ['users', user_id, 'projects', project_id, 'project.json']
+        if len(parts) < 5 or parts[0] != "users" or parts[2] != "projects":
+            continue
+        project_id = parts[3]
+        created = res.get("created_at", "") or ""
+        if created > latest_created_at:
+            latest_created_at = created
+            latest_project_id = project_id
+
+    if not latest_project_id:
         raise HTTPException(status_code=404, detail="No projects found for user")
 
-    best = None
-    best_created_at = ""
-    for pid in project_ids:
-        try:
-            meta = get_project_metadata(user_id, pid)
-            created = (meta or {}).get("created_at") or ""
-            if created >= best_created_at:
-                best_created_at = created
-                best = pid
-        except Exception:
-            continue
-
-    chosen = best or project_ids[-1]
-    return _project_detail(user_id, chosen)
+    return _project_detail(user_id, latest_project_id)
 
 
 @app.get("/api/projects/{user_id}/{project_id}")
