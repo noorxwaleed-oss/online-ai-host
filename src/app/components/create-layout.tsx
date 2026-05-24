@@ -24,8 +24,8 @@ interface CreateLayoutProps {
 
 const steps = [
   { number: 1, label: 'Input' },
-  { number: 2, label: 'Script' },
-  { number: 3, label: 'Personas' },
+  { number: 2, label: 'Personas' },
+  { number: 3, label: 'Script' },
   { number: 4, label: 'Audio' },
   { number: 5, label: 'Cover Art' },
   { number: 6, label: 'Publish' },

@@ -1,204 +1,62 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { CreateLayout } from '../components/create-layout';
 import { GlassCard } from '../components/glass-card';
-import {
-  RotateCw,
-  FileText,
-  ScanSearch,
-  FileEdit,
-  Users,
-  Palette,
-  Rocket,
-  Copy,
-  Check,
-  X,
-  Pencil,
-} from 'lucide-react';
+import { Play, Pause, Loader2, ScanSearch, FileEdit, Users, Palette, Rocket } from 'lucide-react';
+import { useGeneration, type PersonaDraft } from '../providers/generation-provider';
+import { voicesFor, findVoice, type Gender, type VoiceOption } from '@/lib/voices';
+import { previewVoice } from '@/lib/api';
 
-interface ScriptLine {
-  speaker: 'HOST' | 'GUEST';
-  text: string;
-}
-
-const INITIAL_SCRIPT: ScriptLine[] = [
-  { speaker: 'HOST', text: "Welcome to today's episode where we explore the fascinating topic of love in moon." },
-  { speaker: 'GUEST', text: 'Thanks for having me! This is such an intriguing subject that combines romance, science, and culture.' },
-  { speaker: 'HOST', text: "Let's start with the cultural significance. The moon has been a symbol of romance for centuries." },
-  { speaker: 'GUEST', text: 'Absolutely! From ancient poetry to modern songs, the moon represents mystery and longing.' },
-  { speaker: 'HOST', text: 'Now, from a scientific perspective, what would love actually look like on the moon?' },
-  { speaker: 'GUEST', text: 'Well, the lunar environment is quite harsh. It would require advanced habitats and life support.' },
-  { speaker: 'HOST', text: "That's fascinating. Are there any current plans for lunar habitation?" },
-  { speaker: 'GUEST', text: 'Several space agencies are working on establishing permanent lunar bases within the next decade.' },
-  { speaker: 'HOST', text: 'Imagine celebrating an anniversary on the moon! The view of Earth would be incredible.' },
-  { speaker: 'GUEST', text: 'It would be the ultimate romantic gesture, though quite expensive!' },
-  { speaker: 'HOST', text: 'Thank you for this enlightening conversation about love and the moon.' },
-];
-
-// Alternative phrasings used when "regenerating" a line — would come from your LLM call.
-const REGEN_VARIATIONS: Record<'HOST' | 'GUEST', string[]> = {
-  HOST: [
-    'Let me rephrase that — what a great point to explore further.',
-    'Building on that, I find the angle here genuinely fascinating.',
-    'That raises an interesting question worth digging into.',
-  ],
-  GUEST: [
-    'Right, and there are a few more dimensions to consider here.',
-    'Exactly — and there are plenty of angles to unpack on this.',
-    'That resonates with me, and I would add a bit more nuance.',
-  ],
-};
+type Role = 'host' | 'guest';
 
 export function PersonasPage() {
   const navigate = useNavigate();
-  const [script, setScript] = useState<ScriptLine[]>(INITIAL_SCRIPT);
-  const [copied, setCopied] = useState(false);
-  const [regenerating, setRegenerating] = useState(false);
-  const [regenLineIdx, setRegenLineIdx] = useState<number | null>(null);
-  const [editingIdx, setEditingIdx] = useState<number | null>(null);
-  const [editingValue, setEditingValue] = useState('');
-  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { input, personas, setPersonas } = useGeneration();
+
+  const language = input.language;
+  const allVoices = voicesFor(language);
+
+  // Clear stale voice selections whenever language changes (catalogues don't overlap)
+  useEffect(() => {
+    const patch: Partial<PersonaDraft> = {};
+    if (!findVoice(language, personas.voice_id_host)) {
+      patch.voice_id_host = '';
+      patch.host_style = '';
+    }
+    if (!findVoice(language, personas.voice_id_guest)) {
+      patch.voice_id_guest = '';
+      patch.guest_style = '';
+    }
+    if (Object.keys(patch).length > 0) setPersonas(patch);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language]);
 
   const agents = [
-    {
-      name: 'ContentAnalyzer',
-      status: 'completed' as const,
-      message: 'Content analyzed successfully',
-      icon: ScanSearch,
-    },
-    {
-      name: 'Scriptwriter',
-      status: regenerating ? ('active' as const) : ('completed' as const),
-      message: regenerating ? 'Regenerating script...' : 'Script generated successfully',
-      icon: FileEdit,
-    },
-    {
-      name: 'Persona',
-      status: 'active' as const,
-      message: 'Configuring voice personas',
-      icon: Users,
-    },
-    {
-      name: 'Media',
-      status: 'waiting' as const,
-      message: 'Waiting to generate media',
-      icon: Palette,
-    },
-    {
-      name: 'Publisher',
-      status: 'waiting' as const,
-      message: 'Waiting to prepare publishing',
-      icon: Rocket,
-    },
+    { name: 'ContentAnalyzer', status: 'waiting' as const, message: 'Waiting to analyze content', icon: ScanSearch },
+    { name: 'Scriptwriter',    status: 'waiting' as const, message: 'Waiting to write script',     icon: FileEdit },
+    { name: 'Persona',         status: 'active'  as const, message: 'Configuring voice personas',  icon: Users },
+    { name: 'Media',           status: 'waiting' as const, message: 'Waiting to generate media',   icon: Palette },
+    { name: 'Publisher',       status: 'waiting' as const, message: 'Waiting to prepare publishing', icon: Rocket },
   ];
 
-  const copyTextFallback = (text: string): boolean => {
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.select();
-    let ok = false;
-    try {
-      ok = document.execCommand('copy');
-    } catch {
-      ok = false;
-    }
-    document.body.removeChild(textarea);
-    return ok;
-  };
+  const canProceed =
+    personas.host_name.trim().length > 0 &&
+    personas.guest_name.trim().length > 0 &&
+    personas.voice_id_host.trim().length > 0 &&
+    personas.voice_id_guest.trim().length > 0 &&
+    personas.voice_id_host !== personas.voice_id_guest;
 
-  const handleCopyScript = async () => {
-    const scriptText = script.map((line) => `${line.speaker}: ${line.text}`).join('\n\n');
-
-    const showCopied = () => {
-      setCopied(true);
-      toast.success('Script copied to clipboard');
-      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
-      copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
-    };
-
-    try {
-      await navigator.clipboard.writeText(scriptText);
-      showCopied();
-    } catch {
-      if (copyTextFallback(scriptText)) {
-        showCopied();
-      } else {
-        toast.error('Could not copy. Please copy manually.');
-      }
-    }
-  };
-
-  const handleRegenerateAll = async () => {
-    if (regenerating) return;
-    setRegenerating(true);
-    try {
-      // TODO: call your real script-generation endpoint here.
-      await new Promise((r) => setTimeout(r, 1200));
-      setScript((current) =>
-        current.map((line) => {
-          const variants = REGEN_VARIATIONS[line.speaker];
-          const next = variants[Math.floor(Math.random() * variants.length)];
-          return { ...line, text: next };
-        }),
-      );
-      toast.success('Script regenerated');
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Could not regenerate script';
-      toast.error(message);
-    } finally {
-      setRegenerating(false);
-    }
-  };
-
-  const handleRegenerateLine = async (idx: number) => {
-    if (regenLineIdx !== null) return;
-    setRegenLineIdx(idx);
-    try {
-      await new Promise((r) => setTimeout(r, 700));
-      setScript((current) =>
-        current.map((line, i) => {
-          if (i !== idx) return line;
-          const variants = REGEN_VARIATIONS[line.speaker].filter((v) => v !== line.text);
-          const next = variants[Math.floor(Math.random() * variants.length)];
-          return { ...line, text: next };
-        }),
-      );
-      toast.success('Line regenerated');
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Could not regenerate line';
-      toast.error(message);
-    } finally {
-      setRegenLineIdx(null);
-    }
-  };
-
-  const startEdit = (idx: number) => {
-    setEditingIdx(idx);
-    setEditingValue(script[idx].text);
-  };
-
-  const saveEdit = () => {
-    if (editingIdx === null) return;
-    const trimmed = editingValue.trim();
-    if (!trimmed) {
-      toast.warning('Line cannot be empty');
+  const handleNext = () => {
+    if (personas.voice_id_host && personas.voice_id_host === personas.voice_id_guest) {
+      toast.warning('Host and Guest must use different voices.');
       return;
     }
-    setScript((current) =>
-      current.map((line, i) => (i === editingIdx ? { ...line, text: trimmed } : line)),
-    );
-    setEditingIdx(null);
-    setEditingValue('');
-    toast.success('Line updated');
-  };
-
-  const cancelEdit = () => {
-    setEditingIdx(null);
-    setEditingValue('');
+    if (!canProceed) {
+      toast.warning('Fill in the name, gender, and voice for both speakers.');
+      return;
+    }
+    navigate('/create/script');
   };
 
   return (
@@ -206,183 +64,255 @@ export function PersonasPage() {
       currentStep={2}
       agents={agents}
       onPrevious={() => navigate('/create/input')}
-      onNext={() => navigate('/create/script')}
+      onNext={handleNext}
       previousLabel="Back"
-      nextLabel="Next"
+      nextLabel="Generate"
     >
-      <div className="space-y-6">
-        {/* Script Editor */}
-        <GlassCard className="p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold">Script</h2>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleCopyScript}
-                disabled={regenerating}
-                className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4 text-[#10B981]" />
-                    <span className="text-[#10B981]">Copied</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    Copy
-                  </>
-                )}
-              </button>
-              <button
-                onClick={handleRegenerateAll}
-                disabled={regenerating}
-                className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <RotateCw
-                  className={`w-4 h-4 ${regenerating ? 'animate-spin' : ''}`}
-                />
-                {regenerating ? 'Regenerating...' : 'Regenerate'}
-              </button>
-            </div>
-          </div>
+      <GlassCard className="p-8">
+        <h2 className="text-2xl font-semibold mb-2">Configure Personas</h2>
+        <p className="text-sm text-gray-400 mb-6">
+          Set up the Host and Guest voices. Language:{' '}
+          <span className="text-white font-medium">
+            {language === 'AR' ? 'Arabic (Munsit)' : 'English (ElevenLabs)'}
+          </span>
+        </p>
 
-          <div className="space-y-4">
-            {script.map((line, index) => {
-              const isRegenLine = regenLineIdx === index;
-              const isEditing = editingIdx === index;
+        <div className="grid md:grid-cols-2 gap-8">
+          <PersonaSection
+            role="host"
+            label="Host"
+            personas={personas}
+            setPersonas={setPersonas}
+            allVoices={allVoices}
+            otherVoiceId={personas.voice_id_guest}
+            language={language}
+          />
+          <PersonaSection
+            role="guest"
+            label="Guest"
+            personas={personas}
+            setPersonas={setPersonas}
+            allVoices={allVoices}
+            otherVoiceId={personas.voice_id_host}
+            language={language}
+          />
+        </div>
+      </GlassCard>
+    </CreateLayout>
+  );
+}
+
+interface SectionProps {
+  role: Role;
+  label: string;
+  personas: PersonaDraft;
+  setPersonas: (patch: Partial<PersonaDraft>) => void;
+  allVoices: VoiceOption[];
+  otherVoiceId: string;
+  language: 'EN' | 'AR';
+}
+
+function PersonaSection({
+  role,
+  label,
+  personas,
+  setPersonas,
+  allVoices,
+  otherVoiceId,
+  language,
+}: SectionProps) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  const name      = role === 'host' ? personas.host_name      : personas.guest_name;
+  const gender    = role === 'host' ? personas.host_gender    : personas.guest_gender;
+  const voiceId   = role === 'host' ? personas.voice_id_host  : personas.voice_id_guest;
+  const voice     = findVoice(language, voiceId);
+
+  const filteredVoices = allVoices.filter((v) => v.gender === gender);
+
+  // Reset preview when the picked voice changes
+  useEffect(() => {
+    setPreviewUrl(null);
+    setIsPlaying(false);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  }, [voiceId]);
+
+  const setName = (v: string) =>
+    setPersonas(role === 'host' ? { host_name: v } : { guest_name: v });
+
+  const setGender = (g: Gender) => {
+    // Switching gender invalidates the current voice pick
+    if (role === 'host') {
+      setPersonas({ host_gender: g, voice_id_host: '', host_style: '' });
+    } else {
+      setPersonas({ guest_gender: g, voice_id_guest: '', guest_style: '' });
+    }
+  };
+
+  const selectVoice = (v: VoiceOption) => {
+    if (role === 'host') {
+      setPersonas({ voice_id_host: v.id, host_style: v.style });
+    } else {
+      setPersonas({ voice_id_guest: v.id, guest_style: v.style });
+    }
+  };
+
+  const handlePreview = async () => {
+    if (!voice) {
+      toast.info('Pick a voice first.');
+      return;
+    }
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    // Toggle pause if already playing this voice's preview
+    if (previewUrl && isPlaying) {
+      audio.pause();
+      setIsPlaying(false);
+      return;
+    }
+    // Resume if we already have the URL
+    if (previewUrl && !isPlaying) {
+      try {
+        await audio.play();
+        setIsPlaying(true);
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
+
+    setPreviewLoading(true);
+    try {
+      const result = await previewVoice({
+        voice_id: voice.id,
+        language: language === 'AR' ? 'arabic' : 'english',
+        gender: voice.gender,
+        style: voice.style,
+        dialect: voice.dialect,
+      });
+      setPreviewUrl(result.audio_url);
+      audio.src = result.audio_url;
+      await audio.play();
+      setIsPlaying(true);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Could not generate preview';
+      toast.error(msg);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <h3 className="text-lg font-semibold mb-4">{label}</h3>
+
+      {/* 1. Name */}
+      <div className="mb-4">
+        <label className="block text-sm mb-2">{label} name</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={role === 'host' ? 'e.g. Mariam' : 'e.g. Omar'}
+          className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#6366F1] transition-colors"
+        />
+      </div>
+
+      {/* 2. Gender */}
+      <div className="mb-4">
+        <label className="block text-sm mb-2">Gender</label>
+        <div className="flex gap-2">
+          {(['male', 'female'] as const).map((g) => (
+            <button
+              key={g}
+              onClick={() => setGender(g)}
+              className={`flex-1 py-2 rounded-lg border text-sm transition-colors capitalize ${
+                gender === g
+                  ? 'border-[#6366F1] bg-[#6366F1]/20 text-white'
+                  : 'border-white/10 bg-white/5 text-gray-400 hover:text-white'
+              }`}
+            >
+              {g}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. Voice (filtered by gender) */}
+      <div className="mb-4">
+        <label className="block text-sm mb-2">Voice</label>
+        {filteredVoices.length === 0 ? (
+          <p className="text-sm text-gray-500 italic px-3 py-2 bg-white/5 border border-white/10 rounded-lg">
+            No {gender} voices available in this language.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {filteredVoices.map((v) => {
+              const selected = voiceId === v.id;
+              const takenByOther = otherVoiceId === v.id;
               return (
-                <div
-                  key={index}
-                  className={`flex gap-3 ${
-                    line.speaker === 'GUEST' ? 'flex-row-reverse' : 'flex-row'
-                  }`}
+                <button
+                  key={v.id}
+                  onClick={() => selectVoice(v)}
+                  disabled={takenByOther}
+                  className={`w-full flex items-center justify-between gap-3 py-2.5 px-3 rounded-lg border text-sm transition-colors text-left ${
+                    selected
+                      ? 'border-[#6366F1] bg-[#6366F1]/20 text-white'
+                      : 'border-white/10 bg-white/5 text-gray-300 hover:text-white hover:bg-white/10'
+                  } ${takenByOther ? 'opacity-40 cursor-not-allowed' : ''}`}
+                  title={takenByOther ? 'Already picked by the other speaker' : undefined}
                 >
-                  {/* Avatar */}
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-white/15 backdrop-blur-sm border border-white/20 shadow-lg">
-                    <span className="text-xs font-medium text-white">
-                      {line.speaker === 'HOST' ? 'Host' : 'Guest'}
+                  <span className="flex items-center gap-3 min-w-0">
+                    <span className="font-medium capitalize truncate">
+                      {v.style} voice
                     </span>
-                  </div>
-
-                  {/* Chat Bubble */}
-                  <div
-                    className={`flex-1 max-w-[80%] group ${
-                      line.speaker === 'GUEST' ? 'flex justify-end' : ''
-                    }`}
-                  >
-                    <div
-                      className={`relative px-4 py-3 rounded-2xl w-full ${
-                        line.speaker === 'HOST'
-                          ? 'bg-white/10 rounded-tl-sm'
-                          : 'bg-[#6366F1]/20 rounded-tr-sm'
-                      } ${isRegenLine ? 'opacity-60 animate-pulse' : ''}`}
-                    >
-                      {isEditing ? (
-                        <>
-                          <textarea
-                            value={editingValue}
-                            onChange={(e) => setEditingValue(e.target.value)}
-                            rows={Math.max(2, Math.ceil(editingValue.length / 70))}
-                            autoFocus
-                            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-[#6366F1] resize-none"
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                                e.preventDefault();
-                                saveEdit();
-                              }
-                              if (e.key === 'Escape') {
-                                e.preventDefault();
-                                cancelEdit();
-                              }
-                            }}
-                          />
-                          <div className="flex items-center gap-2 mt-2 justify-end">
-                            <button
-                              onClick={cancelEdit}
-                              className="flex items-center gap-1 px-2 py-1 text-xs bg-white/5 border border-white/10 rounded hover:bg-white/10"
-                            >
-                              <X className="w-3 h-3" />
-                              Cancel
-                            </button>
-                            <button
-                              onClick={saveEdit}
-                              className="flex items-center gap-1 px-2 py-1 text-xs bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] rounded hover:opacity-90"
-                            >
-                              <Check className="w-3 h-3" />
-                              Save
-                            </button>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">
-                            {line.text}
-                          </p>
-                          <div
-                            className={`flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity ${
-                              line.speaker === 'GUEST' ? 'justify-end' : 'justify-start'
-                            }`}
-                          >
-                            <button
-                              onClick={() => startEdit(index)}
-                              disabled={regenerating || isRegenLine}
-                              className="flex items-center gap-1 px-2 py-1 hover:bg-white/10 rounded text-xs text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                              title="Edit this line"
-                            >
-                              <Pencil className="w-3 h-3" />
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleRegenerateLine(index)}
-                              disabled={regenerating || isRegenLine}
-                              className="flex items-center gap-1 px-2 py-1 hover:bg-white/10 rounded text-xs text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                              title="Regenerate this line"
-                            >
-                              <RotateCw
-                                className={`w-3 h-3 ${isRegenLine ? 'animate-spin' : ''}`}
-                              />
-                              {isRegenLine ? 'Regenerating' : 'Regenerate'}
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                    {v.dialect && (
+                      <span className="text-xs text-gray-400 capitalize whitespace-nowrap">
+                        {v.dialect} dialect
+                      </span>
+                    )}
+                  </span>
+                </button>
               );
             })}
           </div>
-        </GlassCard>
-
-        {/* Script Info */}
-        <GlassCard className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <FileText className="w-5 h-5 text-[#6366F1]" />
-            <h3 className="text-lg font-semibold">Script Info</h3>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-sm text-gray-400 mb-1">Lines</p>
-              <p className="text-xl font-semibold">{script.length}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-400 mb-1">Est. Duration</p>
-              <p className="text-xl font-semibold">5 min</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-400 mb-1">Language</p>
-              <p className="text-xl font-semibold">EN</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-400 mb-1">Word Count</p>
-              <p className="text-xl font-semibold">
-                {script.reduce((acc, line) => acc + line.text.split(/\s+/).filter(Boolean).length, 0)}
-              </p>
-            </div>
-          </div>
-        </GlassCard>
+        )}
       </div>
-    </CreateLayout>
+
+      {/* 4. Preview */}
+      <button
+        onClick={handlePreview}
+        disabled={!voice || previewLoading}
+        className="w-full flex items-center justify-center gap-2 py-2.5 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {previewLoading ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : isPlaying ? (
+          <Pause className="w-4 h-4" />
+        ) : (
+          <Play className="w-4 h-4" />
+        )}
+        {previewLoading
+          ? 'Generating preview…'
+          : isPlaying
+            ? 'Pause Preview'
+            : `Preview Voice${voice ? ` — ${voice.style}` : ''}`}
+      </button>
+
+      <audio
+        ref={audioRef}
+        className="hidden"
+        onEnded={() => setIsPlaying(false)}
+        onPause={() => setIsPlaying(false)}
+        onPlay={() => setIsPlaying(true)}
+      />
+    </div>
   );
 }

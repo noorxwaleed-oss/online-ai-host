@@ -1,12 +1,12 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { CreateLayout } from '../components/create-layout';
 import { GlassCard } from '../components/glass-card';
+import { useGeneration } from '../providers/generation-provider';
 import {
   Link2,
   FileText,
-  CheckCircle2,
   ScanSearch,
   FileEdit,
   Users,
@@ -28,20 +28,43 @@ function formatFileSize(bytes: number): string {
 
 export function CreateInputPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabType>('url');
-  const [input, setInput] = useState('');
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const { input: draft, setInput: setDraft } = useGeneration();
+
+  const [activeTab, setActiveTab] = useState<TabType>(draft.input_type);
+  const [input, setInput] = useState(draft.input_type === 'url' ? draft.content : '');
+  const [pdfFile, setPdfFile] = useState<File | null>(draft.pdf_file);
   const [isDragging, setIsDragging] = useState(false);
-  const [podcastTitle, setPodcastTitle] = useState('');
-  const [language, setLanguage] = useState('EN');
-  const [analyzed, setAnalyzed] = useState(false);
+  const [podcastTitle, setPodcastTitle] = useState(draft.podcast_name);
+  const [language, setLanguage] = useState<'EN' | 'AR'>(draft.language);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setDraft({
+      input_type: activeTab,
+      content: activeTab === 'url' ? input.trim() : pdfFile?.name ?? '',
+      pdf_file: activeTab === 'pdf' ? pdfFile : null,
+      podcast_name: podcastTitle.trim(),
+      language,
+    });
+  }, [activeTab, input, pdfFile, podcastTitle, language, setDraft]);
+
+  const canProceed =
+    podcastTitle.trim().length > 0 &&
+    (activeTab === 'url' ? input.trim().length > 0 : pdfFile !== null);
+
+  const handleNext = () => {
+    if (!canProceed) {
+      toast.warning('Please provide a podcast title and either a URL or PDF.');
+      return;
+    }
+    navigate('/create/personas');
+  };
 
   const agents = [
     {
       name: 'ContentAnalyzer',
-      status: analyzed ? ('completed' as const) : ('active' as const),
-      message: analyzed ? 'Content analyzed successfully' : 'Analyzing content...',
+      status: 'waiting' as const,
+      message: 'Waiting for input',
       icon: ScanSearch,
     },
     {
@@ -112,19 +135,6 @@ export function CreateInputPage() {
     setPdfFile(null);
   };
 
-  const canAnalyze =
-    activeTab === 'url' ? input.trim().length > 0 : pdfFile !== null;
-
-  const handleAnalyze = () => {
-    if (!canAnalyze) {
-      toast.warning(
-        activeTab === 'url' ? 'Please enter a URL first.' : 'Please upload a PDF first.',
-      );
-      return;
-    }
-    setAnalyzed(true);
-  };
-
   const tabs = [
     { id: 'url' as TabType, label: 'FROM URL', icon: Link2 },
     { id: 'pdf' as TabType, label: 'FROM PDF', icon: FileText },
@@ -134,7 +144,7 @@ export function CreateInputPage() {
     <CreateLayout
       currentStep={1}
       agents={agents}
-      onNext={() => navigate('/create/personas')}
+      onNext={handleNext}
       nextLabel="Next"
     >
       <GlassCard className="p-8">
@@ -263,7 +273,7 @@ export function CreateInputPage() {
           <div>
             <label className="block text-sm mb-2">Language</label>
             <div className="flex gap-2">
-              {['EN', 'AR'].map((lang) => (
+              {(['EN', 'AR'] as const).map((lang) => (
                 <button
                   key={lang}
                   onClick={() => setLanguage(lang)}
@@ -280,60 +290,9 @@ export function CreateInputPage() {
           </div>
         </div>
 
-        {/* Analyze Button */}
-        {!analyzed && (
-          <button
-            onClick={handleAnalyze}
-            disabled={!canAnalyze}
-            className="w-full py-3 bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Analyze Content
-          </button>
-        )}
-
-        {/* Analysis Results */}
-        {analyzed && (
-          <div className="mt-6 space-y-4">
-            <div className="flex items-center gap-2 text-[#10B981]">
-              <CheckCircle2 className="w-5 h-5" />
-              <span className="font-semibold">Analysis Complete</span>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">Topic</label>
-              <p className="text-lg">{podcastTitle || 'love in moon'}</p>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">Key Points</label>
-              <ul className="space-y-2 list-disc list-inside text-gray-300">
-                <li>Exploration of romantic concepts in space</li>
-                <li>Scientific perspective on lunar environments</li>
-                <li>Cultural significance of moon symbolism</li>
-                <li>Future possibilities for lunar habitation</li>
-              </ul>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">Keywords</label>
-              <div className="flex flex-wrap gap-2">
-                {['moon', 'love', 'romance', 'space', 'science', 'culture'].map((keyword) => (
-                  <span
-                    key={keyword}
-                    className="px-3 py-1 bg-[#6366F1]/20 border border-[#6366F1]/30 rounded-full text-sm text-[#6366F1]"
-                  >
-                    {keyword}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">Tone</label>
-              <p className="text-gray-300">Conversational yet informative</p>
-            </div>
-          </div>
-        )}
+        <p className="text-xs text-gray-500 mt-2">
+          Content analysis runs on the next steps. Click <span className="text-white">Next</span> when ready.
+        </p>
       </GlassCard>
     </CreateLayout>
   );
