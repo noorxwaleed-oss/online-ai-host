@@ -1,0 +1,103 @@
+# ============================================================
+#  Secrets — NEVER commit real env files.
+# ============================================================
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
+# Keep templates
+!.env.example
+!**/.env.example
+!example.env
+!**/example.env
+
+# ============================================================
+#  Python (backend)
+# ============================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+ENV/
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+dist/
+pip-wheel-metadata/
+
+# Backend runtime artifacts
+BackEnd/audit_log.jsonl
+BackEnd/*.log
+BackEnd/tmp/
+BackEnd/temp_audio_*.mp3
+BackEnd/temp_audio_*.wav
+BackEnd/podcraft_pdf_uploads/
+
+# Sample input PDF (not source code)
+BackEnd/*.pdf
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ============================================================
+#  Node / frontend
+# ============================================================
+node_modules/
+.pnpm-store/
+.yarn/
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+.vite/
+.turbo/
+
+# Build outputs
+Complete_UI_Design_System/dist/
+Complete_UI_Design_System/build/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ============================================================
+#  Editors / OS
+# ============================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================================================
+#  Legacy vanilla-JS prototype (replaced by src/lib/supabase.ts).
+#  Marked DEPRECATED.md and contains baked-in keys — never push.
+# ============================================================
+Complete_UI_Design_System/js/
+
+# ============================================================
+#  Misc
+# ============================================================
+*.tmp
+*.temp

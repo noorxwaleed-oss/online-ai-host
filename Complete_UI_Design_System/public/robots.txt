@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Block authenticated routes from indexing
+Disallow: /dashboard
+Disallow: /create/
+Disallow: /settings
+Disallow: /library
+
+Sitemap: https://podcraft.ai/sitemap.xml
